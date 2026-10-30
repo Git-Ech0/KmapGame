@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-Map Quest: Learn Karnaugh Maps Step-by-Step</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #131d35;
+      --card-border: #1f2e52;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --accent: #a855f7;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --cell-bg: #182442;
+      --cell-hover: #22325a;
+      --font-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 16px 32px 16px;
+    }
+
+    /* Top Navigation Header */
+    header {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 12px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #38bdf8, #a855f7);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: #040814;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+    }
+
+    .brand h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #38bdf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .mode-tabs {
+      display: flex;
+      background: #090e1a;
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 7px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: #1e293b;
+      color: #38bdf8;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.84rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: all 0.15s ease-in-out;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      color: var(--text);
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      color: #04121a;
+      font-weight: 700;
+      box-shadow: 0 3px 12px rgba(56, 189, 248, 0.35);
+    }
+    .btn-accent {
+      background: linear-gradient(135deg, #a855f7, #9333ea);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 3px 12px rgba(168, 85, 247, 0.35);
+    }
+    .btn-secondary {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      border-color: rgba(56, 189, 248, 0.4);
+      background: #1c2a4c;
+    }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    /* Main Container */
+    .main-layout {
+      width: 100%;
+      max-width: 1120px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+
+    /* Level / Mission Header */
+    .level-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .level-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .level-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stars-row {
+      display: flex;
+      gap: 3px;
+      font-size: 1.15rem;
+      color: #334155;
+    }
+    .star-filled {
+      color: #fbbf24;
+      text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+    }
+
+    .friendly-tip {
+      font-size: 0.88rem;
+      color: #93c5fd;
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 3px solid #38bdf8;
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 14px;
+      line-height: 1.45;
+    }
+
+    /* Output Equation Display */
+    .output-board {
+      background: #090e1c;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .formula-display {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .target-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .target-badge.ready {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+    .target-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+    }
+
+    /* K-Map Board & SVG Overlay */
+    .kmap-viewport {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 0 18px 0;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .kmap-board-wrapper {
+      position: relative;
+      display: inline-block;
+      padding: 10px;
+    }
+
+    .kmap-overlay-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .kmap-table {
+      border-collapse: separate;
+      border-spacing: 8px;
+      table-layout: fixed;
+      position: relative;
+      z-index: 2;
+    }
+
+    .corner-th {
+      width: 80px;
+      height: 52px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-align: center;
+      position: relative;
+      border-radius: 8px;
+      background: #0d1527;
+      border: 1px solid var(--card-border);
+    }
+
+    .corner-th .split-row {
+      position: absolute;
+      bottom: 4px;
+      left: 8px;
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+    .corner-th .split-col {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      color: #c084fc;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .col-header, .row-header {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 8px;
+    }
+    .col-header {
+      height: 36px;
+      color: #c084fc;
+      background: rgba(192, 132, 252, 0.06);
+      border: 1px solid rgba(192, 132, 252, 0.15);
+    }
+    .row-header {
+      width: 54px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.06);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+    }
+
+    /* K-Map Cells */
+    .kmap-cell {
+      width: 72px;
+      height: 72px;
+      background: var(--cell-bg);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s ease;
+      font-size: 1.6rem;
+      font-weight: 800;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+    }
+
+    @media (max-width: 580px) {
+      .kmap-cell {
+        width: 58px;
+        height: 58px;
+        font-size: 1.35rem;
+      }
+    }
+
+    .kmap-cell:hover {
+      background: var(--cell-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: scale(1.03);
+      z-index: 3;
+    }
+
+    .kmap-cell.selected {
+      border-color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.22) !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.45) !important;
+      transform: scale(0.96);
+      z-index: 4;
+    }
+
+    .val-1 {
+      color: #ffffff;
+    }
+    .val-0 {
+      color: #475569;
+    }
+    .val-X {
+      color: #fbbf24;
+    }
+
+    .cell-badges {
+      position: absolute;
+      bottom: 5px;
+      display: flex;
+      gap: 3px;
+    }
+    .cell-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Board Actions */
+    .board-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Sidebar Components */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Live Variable Cancellation Explainer */
+    .explainer-card {
+      background: #0f182c;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .explainer-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preview-box {
+      background: #070b14;
+      border-radius: 8px;
+      padding: 10px 12px;
+      border-left: 4px solid var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .preview-box.valid {
+      border-left-color: var(--success);
+      background: rgba(16, 185, 129, 0.08);
+    }
+    .preview-box.invalid {
+      border-left-color: var(--danger);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .preview-term {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Live Variable Breakdown Items */
+    .var-breakdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 6px;
+      margin-top: 4px;
+    }
+
+    .var-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+    }
+    .var-cancels {
+      color: #34d399;
+      font-weight: 700;
+    }
+    .var-stays {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    /* Active Circles List */
+    .circles-card {
+      background: #0f182c;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .circles-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .circles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .circle-pill {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #141f38;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .del-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.1rem;
+      padding: 2px 6px;
+      cursor: pointer;
+    }
+    .del-btn:hover {
+      color: var(--danger);
+    }
+
+    /* Sandbox / Free Play Controls */
+    .sandbox-panel {
+      background: #0f182c;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Status Alert */
+    .status-alert {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-top: 14px;
+      display: none;
+      line-height: 1.4;
+    }
+    .status-alert.show {
+      display: block;
+    }
+    .status-success {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+    .status-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(4, 7, 15, 0.8);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 16px;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: #131d35;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* Levels Grid */
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .level-card {
+      background: #090e1a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: center;
+    }
+    .level-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .level-card.active {
+      border-color: #38bdf8;
+      background: #172554;
+    }
+
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">K</div>
+      <div>
+        <h1>K-Map Quest</h1>
+      </div>
+    </div>
+
+    <!-- Mode Selector Tabs -->
+    <div class="mode-tabs">
+      <button class="tab-btn active" id="tab-campaign" onclick="setMode('campaign')">
+        🏆 Levels (<span id="total-stars-badge">0/45 ★</span>)
+      </button>
+      <button class="tab-btn" id="tab-practice" onclick="setMode('practice')">
+        🎲 Practice
+      </button>
+      <button class="tab-btn" id="tab-sandbox" onclick="setMode('sandbox')">
+        🧪 Sandbox
+      </button>
+    </div>
+
+    <div class="header-actions">
+      <!-- Notation Selector -->
+      <button class="btn-secondary" id="btn-notation" onclick="toggleNotation()" title="Switch how formulas are displayed">
+        Style: <strong id="notation-label">A'B</strong>
+      </button>
+
+      <!-- Levels Modal Trigger -->
+      <button class="btn-secondary" onclick="openLevelsModal()">
+        🗺 Choose Level
+      </button>
+
+      <!-- Audio Mute Button -->
+      <button class="btn-secondary" id="btn-sound" onclick="toggleAudio()">
+        🔊 Sound
+      </button>
+
+      <!-- How to Play Guide Modal Trigger -->
+      <button class="btn-secondary" onclick="openHelpModal()">
+        ❓ How to Play
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Layout -->
+  <main class="main-layout">
+    
+    <!-- Left Main Card: Board & Formulas -->
+    <div class="card">
+      
+      <!-- Level Title Bar -->
+      <div class="level-header">
+        <div class="level-title-group">
+          <div class="level-title">
+            <span id="level-label">Level 1: Your First Pair</span>
+            <div class="stars-row" id="level-stars">★★★</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:6px;" id="campaign-nav">
+          <button class="btn-secondary" id="btn-prev-lvl" onclick="prevLevel()">← Prev</button>
+          <button class="btn-secondary" id="btn-next-lvl" onclick="nextLevel()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Friendly Lesson Tip -->
+      <div class="friendly-tip" id="level-tip">
+        <strong>Goal:</strong> Circle both 1s together using a single circle. Notice how variable B cancels out!
+      </div>
+
+      <!-- Target & Output Status Bar -->
+      <div class="output-board">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Resulting Formula:</span>
+          <div class="formula-display" id="formula-display">F = 0</div>
+        </div>
+
+        <div class="target-badge pending" id="target-status">
+          1s Left to Circle: 2
+        </div>
+      </div>
+
+      <!-- Interactive K-Map Matrix with SVG Rounded Loops Layer -->
+      <div class="kmap-viewport">
+        <div class="kmap-board-wrapper" id="kmap-wrapper">
+          <svg class="kmap-overlay-svg" id="kmap-svg"></svg>
+          <div id="kmap-table-container"></div>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls Below Grid -->
+      <div class="board-controls">
+        <div style="display:flex; gap:8px;">
+          <button class="btn-secondary" onclick="giveHint()" title="Highlight the next best circle">
+            💡 Give Hint
+          </button>
+          <button class="btn-secondary" onclick="autoSolve()" title="Show the optimal circles">
+            🤖 Show Answer
+          </button>
+        </div>
+
+        <button class="btn-accent" style="padding: 10px 20px; font-size: 0.95rem;" onclick="checkSolution()">
+          ✔ Check My Circles
+        </button>
+      </div>
+
+      <!-- Status Feedback Alert -->
+      <div id="status-alert" class="status-alert"></div>
+    </div>
+
+    <!-- Right Control & Inspector Sidebar -->
+    <div class="sidebar">
+
+      <!-- Live Selection Inspector & Cancellation Explainer -->
+      <div class="explainer-card">
+        <div class="explainer-title">
+          <span>Circle Inspector</span>
+          <span id="selection-count" style="font-size:0.75rem; color:var(--text-dim);">0 cells selected</span>
+        </div>
+
+        <div class="preview-box" id="preview-box">
+          <div id="preview-desc" style="font-size:0.8rem; color:var(--text-muted);">
+            Click 1s on the grid to create a circle.
+          </div>
+          <div class="preview-term" id="preview-term">--</div>
+
+          <!-- Why it works breakdown: shows exactly which variable cancels -->
+          <div class="var-breakdown-list" id="var-breakdown" style="display:none;"></div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-primary" id="btn-confirm-group" style="flex: 1; justify-content: center;" onclick="confirmCurrentGroup()" disabled>
+            ✚ Add Circle (Enter)
+          </button>
+          <button class="btn-secondary" onclick="clearDraftSelection()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Confirmed Circles List -->
+      <div class="circles-card">
+        <div class="circles-header">
+          <strong style="font-size: 0.88rem;">Your Circles (<span id="active-group-count">0</span>)</strong>
+          <button class="btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="clearAllGroups()">Reset</button>
+        </div>
+
+        <div class="circles-list" id="circles-list">
+          <div style="color: var(--text-dim); font-size: 0.8rem; text-align: center; padding: 20px 0;">
+            No circles added yet.
+          </div>
+        </div>
+      </div>
+
+      <!-- Sandbox Free Play Panel -->
+      <div class="sandbox-panel" id="sandbox-panel" style="display: none;">
+        <strong style="font-size: 0.88rem; color: #38bdf8;">🧪 Free Play Grid Size</strong>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-secondary" style="flex:1; justify-content:center;" onclick="setSandboxGrid(2)">2-Var (2x2)</button>
+          <button class="btn-secondary" style="flex:1; justify-content:center;" onclick="setSandboxGrid(3)">3-Var (2x4)</button>
+          <button class="btn-secondary" style="flex:1; justify-content:center;" onclick="setSandboxGrid(4)">4-Var (4x4)</button>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
+          Click any cell on the grid to cycle between <strong>0 → 1 → X</strong>.
+        </p>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-secondary" style="flex:1;" onclick="clearSandboxGrid()">Clear to 0s</button>
+          <button class="btn-secondary" style="flex:1;" onclick="generatePracticeMap(currentVarCount)">Randomize</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- =========================================================
+       MODALS
+       ========================================================= -->
+
+  <!-- Win / Completion Modal -->
+  <div class="modal-backdrop" id="win-modal">
+    <div class="modal" style="text-align: center;">
+      <div style="font-size: 2.5rem; margin-bottom: 8px;" id="modal-star-display">★★★</div>
+      <h2 style="font-size: 1.5rem; margin-bottom: 6px;" id="modal-title">Level Cleared!</h2>
+      <p style="color: var(--text-muted); margin-bottom: 16px; line-height: 1.45; font-size: 0.9rem;" id="modal-desc">
+        You covered all the 1s with the fewest circles!
+      </p>
+
+      <div style="background: #090e1c; border: 1px solid var(--card-border); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-family: var(--font-mono); font-size: 1.15rem; color: #38bdf8;" id="modal-final-expr">
+        F = A'
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: center;">
+        <button class="btn-secondary" onclick="closeModal('win-modal')">Review Board</button>
+        <button class="btn-primary" id="modal-next-btn" onclick="nextLevelFromModal()">Next Challenge →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Selection Modal -->
+  <div class="modal-backdrop" id="levels-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('levels-modal')">✕</button>
+      <h2>Campaign Levels</h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
+        15 progressive lessons from basic pairs to 4-corner wraps and wildcards.
+      </p>
+
+      <div class="levels-grid" id="levels-grid"></div>
+    </div>
+  </div>
+
+  <!-- How to Play Guide Modal -->
+  <div class="modal-backdrop" id="help-modal">
+    <div class="modal" style="max-width: 580px;">
+      <button class="modal-close" onclick="closeModal('help-modal')">✕</button>
+      <h2 style="margin-bottom: 12px;">How to Play K-Maps in 4 Simple Rules</h2>
+
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:0.86rem; line-height:1.5; color:#cbd5e1;">
+        <div>
+          <strong style="color:var(--primary);">1. The Main Goal:</strong><br>
+          Circle every <strong>1</strong> using the <em>fewest</em> and <em>largest</em> circles possible.
+        </div>
+        <div>
+          <strong style="color:var(--primary);">2. Allowed Circle Sizes:</strong><br>
+          Circles must strictly have <strong>1, 2, 4, 8, or 16</strong> cells (powers of 2). You can never circle 3, 5, or 6 cells!
+        </div>
+        <div>
+          <strong style="color:var(--primary);">3. Rectangles Only (Never Diagonals):</strong><br>
+          Circles must be horizontal lines, vertical lines, or solid rectangles.
+        </div>
+        <div>
+          <strong style="color:var(--primary);">4. Edges Connect (Pac-Man Rules!):</strong><br>
+          The board wraps around! The far-left column connects to the far-right column, and the top row connects to the bottom row.
+        </div>
+        <div>
+          <strong style="color:var(--warning);">5. Wildcards (X):</strong><br>
+          'X' means "Don't Care". You can include an X in a circle if it helps make your circle twice as big, but you don't have to circle it!
+        </div>
+        <div>
+          <strong style="color:var(--danger);">6. Never circle a 0!</strong>
+        </div>
+      </div>
+
+      <div style="text-align:right; margin-top:16px;">
+        <button class="btn-primary" onclick="closeModal('help-modal')">Got it! Let's play</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       JAVASCRIPT GAME ENGINE
+       ========================================================= */
+  -->
+  <script>
+    /* =========================================================
+       1. WEB AUDIO SYNTHESIZER
+       ========================================================= */
+    let audioCtx = null;
+    let audioEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('btn-sound').textContent = audioEnabled ? '🔊 Sound' : '🔇 Muted';
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.12) {
+      if (!audioEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    const sound = {
+      click: () => playTone(880, 'sine', 0.04, 0.08),
+      add: () => {
+        playTone(523.25, 'sine', 0.08, 0.12);
+        setTimeout(() => playTone(659.25, 'sine', 0.1, 0.12), 50);
+        setTimeout(() => playTone(783.99, 'sine', 0.18, 0.12), 100);
+      },
+      remove: () => playTone(450, 'sawtooth', 0.08, 0.08),
+      error: () => {
+        playTone(220, 'sawtooth', 0.12, 0.1);
+        setTimeout(() => playTone(165, 'sawtooth', 0.15, 0.1), 60);
+      },
+      win: () => {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => playTone(freq, 'triangle', 0.22, 0.14), idx * 80);
+        });
+      },
+      hint: () => {
+        playTone(783.99, 'sine', 0.1, 0.1);
+        setTimeout(() => playTone(1046.5, 'sine', 0.18, 0.12), 70);
+      }
+    };
+
+    /* =========================================================
+       2. COLOR PALETTES FOR CIRCLE LOOPS
+       ========================================================= */
+    const GROUP_COLORS = [
+      { border: '#38bdf8', bg: 'rgba(56, 189, 248, 0.22)', text: '#7dd3fc' },
+      { border: '#c084fc', bg: 'rgba(192, 132, 252, 0.22)', text: '#e9d5ff' },
+      { border: '#34d399', bg: 'rgba(52, 211, 153, 0.22)', text: '#a7f3d0' },
+      { border: '#fbbf24', bg: 'rgba(251, 191, 36, 0.22)', text: '#fde68a' },
+      { border: '#f43f5e', bg: 'rgba(244, 63, 94, 0.22)', text: '#fecdd3' },
+      { border: '#818cf8', bg: 'rgba(129, 140, 248, 0.22)', text: '#c7d2fe' }
+    ];
+
+    /* =========================================================
+       3. 15 BEGINNER-FRIENDLY PROGRESSIVE LESSONS
+       ========================================================= */
+    const CAMPAIGN_LEVELS = [
+      {
+        id: 1,
+        title: "Level 1: Your First Pair",
+        varCount: 2,
+        map: [[1, 1], [0, 0]],
+        tip: "Circle the two side-by-side 1s. Notice that A is 0 in both, but B changes from 0 to 1—so B cancels out completely!",
+        par: 1
+      },
+      {
+        id: 2,
+        title: "Level 2: The Vertical Pair",
+        varCount: 2,
+        map: [[0, 1], [0, 1]],
+        tip: "Now circle the two vertical 1s. This time variable A changes, so A cancels out and leaves F = B!",
+        par: 1
+      },
+      {
+        id: 3,
+        title: "Level 3: All Ones!",
+        varCount: 2,
+        map: [[1, 1], [1, 1]],
+        tip: "When every single cell is 1, a single circle of 4 cancels all variables: F = 1 (Always True)!",
+        par: 1
+      },
+      {
+        id: 4,
+        title: "Level 4: Three Variables (Meet C!)",
+        varCount: 3,
+        map: [[1, 1, 0, 0], [0, 0, 0, 0]],
+        tip: "The board is now 2×4! The row is A, and columns are BC. Find the pair of 1s in the top row.",
+        par: 1
+      },
+      {
+        id: 5,
+        title: "Level 5: The 2×2 Block",
+        varCount: 3,
+        map: [[0, 1, 1, 0], [0, 1, 1, 0]],
+        tip: "A 2×2 square of four 1s eliminates TWO variables at once, leaving just a single letter!",
+        par: 1
+      },
+      {
+        id: 6,
+        title: "Level 6: Pac-Man Wrap (Left & Right)",
+        varCount: 3,
+        map: [[1, 0, 0, 1], [0, 0, 0, 0]],
+        tip: "The board wraps around like Pac-Man! The far-left column (00) and far-right column (10) are direct neighbors.",
+        par: 1
+      },
+      {
+        id: 7,
+        title: "Level 7: The 4-Cell Outer Wrap",
+        varCount: 3,
+        map: [[1, 0, 0, 1], [1, 0, 0, 1]],
+        tip: "Circle all 4 cells on the left and right edges together with ONE single wrap-around circle!",
+        par: 1
+      },
+      {
+        id: 8,
+        title: "Level 8: Sharing is Caring (Overlaps)",
+        varCount: 3,
+        map: [[1, 1, 0, 0], [0, 1, 1, 0]],
+        tip: "You can share a 1 between two circles! Overlapping circles are much better than leaving an isolated 1.",
+        par: 2
+      },
+      {
+        id: 9,
+        title: "Level 9: Four Variables (AB and CD)",
+        varCount: 4,
+        map: [
+          [0, 0, 0, 0],
+          [0, 1, 1, 0],
+          [0, 1, 1, 0],
+          [0, 0, 0, 0]
+        ],
+        tip: "The classic 4×4 board! Rows are AB and columns are CD. Find the central 2×2 square.",
+        par: 1
+      },
+      {
+        id: 10,
+        title: "Level 10: Top & Bottom Wrap",
+        varCount: 4,
+        map: [
+          [0, 1, 1, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 1, 1, 0]
+        ],
+        tip: "Just like left and right wrap around, the top row and bottom row wrap around too!",
+        par: 1
+      },
+      {
+        id: 11,
+        title: "Level 11: The Famous 4 Corners",
+        varCount: 4,
+        map: [
+          [1, 0, 0, 1],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [1, 0, 0, 1]
+        ],
+        tip: "Because both edges wrap, the four outer corners of the board form ONE single circle of 4!",
+        par: 1
+      },
+      {
+        id: 12,
+        title: "Level 12: The Great 8 (Octet)",
+        varCount: 4,
+        map: [
+          [0, 0, 0, 0],
+          [1, 1, 1, 1],
+          [1, 1, 1, 1],
+          [0, 0, 0, 0]
+        ],
+        tip: "Circle half the board (8 cells) with one big circle! It simplifies down to just a single letter.",
+        par: 1
+      },
+      {
+        id: 13,
+        title: "Level 13: Meet the Wildcard (X)",
+        varCount: 4,
+        map: [
+          [0, 0, 0, 0],
+          [1, 'X', 1, 0],
+          [1, 1, 1, 0],
+          [0, 0, 0, 0]
+        ],
+        tip: "'X' means Don't Care. Treat it like a 1 if it helps you turn two separate circles into one big 4-cell square!",
+        par: 2
+      },
+      {
+        id: 14,
+        title: "Level 14: Don't Circle X Alone!",
+        varCount: 4,
+        map: [
+          [1, 1, 0, 0],
+          [1, 1, 0, 'X'],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0]
+        ],
+        tip: "Only include an X if it makes your 1s circle bigger. Never make a circle that ONLY has Xs!",
+        par: 1
+      },
+      {
+        id: 15,
+        title: "Level 15: Graduation Challenge",
+        varCount: 4,
+        map: [
+          [1, 0, 0, 1],
+          [1, 1, 0, 0],
+          ['X', 1, 1, 0],
+          [1, 0, 1, 1]
+        ],
+        tip: "Combine wraps, corner tricks, and wildcards to cover all 1s with the fewest circles possible!",
+        par: 4
+      }
+    ];
+
+    /* =========================================================
+       4. GAME STATE
+       ========================================================= */
+    let gameMode = 'campaign'; // 'campaign' | 'practice' | 'sandbox'
+    let currentLevelIdx = 0;
+    let currentVarCount = 2; // 2, 3, or 4
+    let mapData = []; // 2D array of 0, 1, or 'X'
+    let confirmedGroups = []; // Array of { cells: [{r,c}], term: string, colorIdx: number }
+    let selectedCells = new Set(); // Currently selected cell keys "r,c"
+    let userStars = {}; // Map of level index -> star count earned
+    let notationStyle = 'prime'; // 'prime' (A') | 'english' (NOT A) | 'overline' (Ā)
+
+    try {
+      const saved = localStorage.getItem('kmap_quest_stars');
+      if (saved) userStars = JSON.parse(saved);
+    } catch(e) {}
+
+    /* =========================================================
+       5. MATHEMATICS & GRAY CODES
+       ========================================================= */
+    const GRAY_4 = [0, 1, 3, 2]; // 00, 01, 11, 10
+
+    function getGridDims(varCount) {
+      if (varCount === 2) return { rows: 2, cols: 2 };
+      if (varCount === 3) return { rows: 2, cols: 4 };
+      return { rows: 4, cols: 4 };
+    }
+
+    function getVariableValues(r, c, varCount) {
+      if (varCount === 2) {
+        return { A: r, B: c };
+      } else if (varCount === 3) {
+        const colGray = GRAY_4[c];
+        return {
+          A: r,
+          B: (colGray >> 1) & 1,
+          C: colGray & 1
+        };
+      } else {
+        const rowGray = GRAY_4[r];
+        const colGray = GRAY_4[c];
+        return {
+          A: (rowGray >> 1) & 1,
+          B: rowGray & 1,
+          C: (colGray >> 1) & 1,
+          D: colGray & 1
+        };
+      }
+    }
+
+    function analyzeRectangle(cells, R, C) {
+      const count = cells.length;
+      if (![1, 2, 4, 8, 16].includes(count)) return null;
+
+      const cellKeySet = new Set(cells.map(pt => `${pt.r},${pt.c}`));
+      const validHeights = [1, 2, 4].filter(h => h <= R);
+      const validWidths = [1, 2, 4].filter(w => w <= C);
+
+      for (let h of validHeights) {
+        for (let w of validWidths) {
+          if (h * w === count) {
+            for (let r0 = 0; r0 < R; r0++) {
+              for (let c0 = 0; c0 < C; c0++) {
+                let match = true;
+                let testCount = 0;
+                for (let dr = 0; dr < h; dr++) {
+                  for (let dc = 0; dc < w; dc++) {
+                    const r = (r0 + dr) % R;
+                    const c = (c0 + dc) % C;
+                    if (!cellKeySet.has(`${r},${c}`)) {
+                      match = false;
+                      break;
+                    }
+                    testCount++;
+                  }
+                  if (!match) break;
+                }
+                if (match && testCount === count) {
+                  return { r0, c0, h, w };
+                }
+              }
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    function getTermAnalysis(cells, varCount) {
+      if (cells.length === 0) return null;
+      const varNames = varCount === 2 ? ['A', 'B'] : varCount === 3 ? ['A', 'B', 'C'] : ['A', 'B', 'C', 'D'];
+      const analysis = [];
+      const keptLiterals = [];
+
+      for (let v of varNames) {
+        let firstVal = null;
+        let uniform = true;
+        for (let cell of cells) {
+          const vals = getVariableValues(cell.r, cell.c, varCount);
+          if (firstVal === null) {
+            firstVal = vals[v];
+          } else if (firstVal !== vals[v]) {
+            uniform = false;
+            break;
+          }
+        }
+
+        if (uniform && firstVal !== null) {
+          analysis.push({ varName: v, status: 'stays', val: firstVal });
+          keptLiterals.push({ name: v, val: firstVal });
+        } else {
+          analysis.push({ varName: v, status: 'cancels' });
+        }
+      }
+
+      let termStr = "1";
+      if (keptLiterals.length > 0) {
+        termStr = keptLiterals.map(lit => lit.val === 1 ? lit.name : `${lit.name}'`).join('');
+      }
+
+      return { term: termStr, analysis };
+    }
+
+    function formatTermDisplay(term) {
+      if (!term || term === "1" || term === "0") return term;
+
+      if (notationStyle === 'english') {
+        const parts = [];
+        for (let i = 0; i < term.length; i++) {
+          if (term[i + 1] === "'") {
+            parts.push(`NOT ${term[i]}`);
+            i++;
+          } else {
+            parts.push(term[i]);
+          }
+        }
+        return parts.join(' and ');
+      } else if (notationStyle === 'overline') {
+        let out = "";
+        for (let i = 0; i < term.length; i++) {
+          if (term[i + 1] === "'") {
+            out += `<span style="text-decoration:overline;">${term[i]}</span>`;
+            i++;
+          } else {
+            out += term[i];
+          }
+        }
+        return out;
+      } else {
+        // Standard Prime notation
+        return term;
+      }
+    }
+
+    function toggleNotation() {
+      if (notationStyle === 'prime') notationStyle = 'english';
+      else if (notationStyle === 'english') notationStyle = 'overline';
+      else notationStyle = 'prime';
+
+      const label = document.getElementById('notation-label');
+      if (notationStyle === 'prime') label.textContent = "A'B (Prime)";
+      else if (notationStyle === 'english') label.textContent = "NOT A (Words)";
+      else label.textContent = "ĀB (Overbar)";
+
+      renderBoard();
+      renderGroupsList();
+      updateFormulaDisplay();
+    }
+
+    /* =========================================================
+       6. OPTIMAL SOLVER (Background Checker)
+       ========================================================= */
+    function findAllPrimeImplicants(map, varCount) {
+      const { rows: R, cols: C } = getGridDims(varCount);
+      const validRects = [];
+      const validHeights = [1, 2, 4].filter(h => h <= R);
+      const validWidths = [1, 2, 4].filter(w => w <= C);
+
+      for (let h of validHeights) {
+        for (let w of validWidths) {
+          for (let r0 = 0; r0 < R; r0++) {
+            for (let c0 = 0; c0 < C; c0++) {
+              let containsZero = false;
+              let onesCount = 0;
+              const cellList = [];
+
+              for (let dr = 0; dr < h; dr++) {
+                for (let dc = 0; dc < w; dc++) {
+                  const r = (r0 + dr) % R;
+                  const c = (c0 + dc) % C;
+                  const val = map[r][c];
+                  if (val === 0) {
+                    containsZero = true;
+                    break;
+                  }
+                  if (val === 1) onesCount++;
+                  cellList.push({ r, c });
+                }
+                if (containsZero) break;
+              }
+
+              if (!containsZero && onesCount > 0) {
+                const key = cellList.map(p => `${p.r},${p.c}`).sort().join(';');
+                if (!validRects.some(r => r.key === key)) {
+                  validRects.push({
+                    key,
+                    cells: cellList,
+                    size: cellList.length,
+                    term: getTermAnalysis(cellList, varCount).term
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Filter to only Primes
+      const primes = [];
+      for (let candidate of validRects) {
+        const cKeys = new Set(candidate.cells.map(p => `${p.r},${p.c}`));
+        let isContained = false;
+        for (let other of validRects) {
+          if (other.size > candidate.size) {
+            const oKeys = new Set(other.cells.map(p => `${p.r},${p.c}`));
+            if ([...cKeys].every(k => oKeys.has(k))) {
+              isContained = true;
+              break;
+            }
+          }
+        }
+        if (!isContained) primes.push(candidate);
+      }
+      return primes;
+    }
+
+    function solveMinimalCover(map, varCount) {
+      const { rows: R, cols: C } = getGridDims(varCount);
+      const onesToCover = [];
+      for (let r = 0; r < R; r++) {
+        for (let c = 0; c < C; c++) {
+          if (map[r][c] === 1) onesToCover.push(`${r},${c}`);
+        }
+      }
+
+      if (onesToCover.length === 0) return [];
+
+      const primes = findAllPrimeImplicants(map, varCount);
+      let bestCover = null;
+
+      function backtrack(idx, currentCover, uncovered) {
+        if (bestCover && currentCover.length >= bestCover.length) return;
+        if (uncovered.size === 0) {
+          if (!bestCover || currentCover.length < bestCover.length) {
+            bestCover = [...currentCover];
+          }
+          return;
+        }
+        if (idx >= primes.length) return;
+
+        // Pick
+        const pi = primes[idx];
+        const nextUncovered = new Set(uncovered);
+        for (let pt of pi.cells) nextUncovered.delete(`${pt.r},${pt.c}`);
+        currentCover.push(pi);
+        backtrack(idx + 1, currentCover, nextUncovered);
+        currentCover.pop();
+
+        // Skip
+        backtrack(idx + 1, currentCover, uncovered);
+      }
+
+      backtrack(0, [], new Set(onesToCover));
+      return bestCover || [];
+    }
+
+    /* =========================================================
+       7. BOARD RENDERING & INTERACTION
+       ========================================================= */
+    function renderBoard() {
+      const container = document.getElementById('kmap-table-container');
+      container.innerHTML = '';
+
+      const { rows: R, cols: C } = getGridDims(currentVarCount);
+      const table = document.createElement('table');
+      table.className = 'kmap-table';
+
+      // Header row
+      const headRow = document.createElement('tr');
+      const cornerTh = document.createElement('th');
+      cornerTh.className = 'corner-th';
+      cornerTh.innerHTML = `
+        <span class="split-row">${currentVarCount === 2 ? 'Row A' : currentVarCount === 3 ? 'Row A' : 'Rows AB'}</span>
+        <span class="split-col">${currentVarCount === 2 ? 'Col B' : currentVarCount === 3 ? 'Cols BC' : 'Cols CD'}</span>
+      `;
+      headRow.appendChild(cornerTh);
+
+      const colLabels = C === 2 ? ['0', '1'] : ['00', '01', '11', '10'];
+      const rowLabels = R === 2 ? ['0', '1'] : ['00', '01', '11', '10'];
+
+      for (let c = 0; c < C; c++) {
+        const th = document.createElement('th');
+        th.className = 'col-header';
+        th.textContent = colLabels[c];
+        headRow.appendChild(th);
+      }
+      table.appendChild(headRow);
+
+      // Data rows
+      for (let r = 0; r < R; r++) {
+        const tr = document.createElement('tr');
+        const rth = document.createElement('th');
+        rth.className = 'row-header';
+        rth.textContent = rowLabels[r];
+        tr.appendChild(rth);
+
+        for (let c = 0; c < C; c++) {
+          const td = document.createElement('td');
+          const cellKey = `${r},${c}`;
+          const isSelected = selectedCells.has(cellKey);
+          const cellVal = mapData[r][c];
+
+          td.className = `kmap-cell val-${cellVal} ${isSelected ? 'selected' : ''}`;
+          td.dataset.key = cellKey;
+
+          // Cell value node
+          const valSpan = document.createElement('span');
+          valSpan.textContent = cellVal;
+          td.appendChild(valSpan);
+
+          // Group mini indicator dots
+          const matchingGroups = confirmedGroups.filter(g => g.cells.some(pt => pt.r === r && pt.c === c));
+          if (matchingGroups.length > 0) {
+            const badgesDiv = document.createElement('div');
+            badgesDiv.className = 'cell-badges';
+            matchingGroups.forEach(g => {
+              const dot = document.createElement('div');
+              dot.className = 'cell-dot';
+              dot.style.backgroundColor = GROUP_COLORS[g.colorIdx % GROUP_COLORS.length].border;
+              badgesDiv.appendChild(dot);
+            });
+            td.appendChild(badgesDiv);
+          }
+
+          td.onclick = () => onCellClicked(r, c);
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+
+      container.appendChild(table);
+      requestAnimationFrame(renderSvgLoops);
+      updateFormulaDisplay();
+      updateInspector();
+    }
+
+    function onCellClicked(r, c) {
+      if (gameMode === 'sandbox') {
+        // In sandbox, click cycles 0 -> 1 -> X
+        const curr = mapData[r][c];
+        mapData[r][c] = curr === 0 ? 1 : curr === 1 ? 'X' : 0;
+        sound.click();
+        confirmedGroups = [];
+        renderBoard();
+        return;
+      }
+
+      sound.click();
+      const key = `${r},${c}`;
+      if (selectedCells.has(key)) selectedCells.delete(key);
+      else selectedCells.add(key);
+
+      renderBoard();
+    }
+
+    /* =========================================================
+       8. SVG ROUNDED LOOPS (Visual Circles)
+       ========================================================= */
+    function renderSvgLoops() {
+      const svg = document.getElementById('kmap-svg');
+      const wrapper = document.getElementById('kmap-wrapper');
+      if (!svg || !wrapper) return;
+
+      svg.innerHTML = '';
+      const wrapperRect = wrapper.getBoundingClientRect();
+      svg.setAttribute('width', wrapperRect.width);
+      svg.setAttribute('height', wrapperRect.height);
+      svg.setAttribute('viewBox', `0 0 ${wrapperRect.width} ${wrapperRect.height}`);
+
+      const { rows: R, cols: C } = getGridDims(currentVarCount);
+
+      // Render confirmed groups
+      confirmedGroups.forEach((group) => {
+        const color = GROUP_COLORS[group.colorIdx % GROUP_COLORS.length];
+        drawLoop(svg, wrapperRect, group.cells, R, C, color, false);
+      });
+
+      // Render draft preview
+      if (selectedCells.size > 0) {
+        const chosen = Array.from(selectedCells).map(k => {
+          const [r, c] = k.split(',').map(Number);
+          return { r, c };
+        });
+        const rect = analyzeRectangle(chosen, R, C);
+        const hasZero = chosen.some(pt => mapData[pt.r][pt.c] === 0);
+
+        if (rect && !hasZero) {
+          const previewColor = { border: '#38bdf8', bg: 'rgba(56, 189, 248, 0.18)' };
+          drawLoop(svg, wrapperRect, chosen, R, C, previewColor, true);
+        }
+      }
+    }
+
+    function drawLoop(svg, wrapperRect, cells, R, C, color, isDashed = false) {
+      const rect = analyzeRectangle(cells, R, C);
+      if (!rect) return;
+
+      const { r0, c0, h, w } = rect;
+      const pad = 4;
+      const radius = 14;
+
+      const wrapsH = (c0 + w > C);
+      const wrapsV = (r0 + h > R);
+
+      function getBounds(r, c) {
+        const el = document.querySelector(`[data-key="${r},${c}"]`);
+        if (!el) return { x: 0, y: 0, w: 0, h: 0 };
+        const b = el.getBoundingClientRect();
+        return {
+          x: b.left - wrapperRect.left,
+          y: b.top - wrapperRect.top,
+          w: b.width,
+          h: b.height
+        };
+      }
+
+      const style = `
+        fill: ${color.bg};
+        stroke: ${color.border};
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        ${isDashed ? 'stroke-dasharray: 6,4;' : ''}
+      `;
+
+      if (!wrapsH && !wrapsV) {
+        const tl = getBounds(r0, c0);
+        const br = getBounds(r0 + h - 1, c0 + w - 1);
+        const rx = tl.x + pad;
+        const ry = tl.y + pad;
+        const rw = (br.x + br.w) - tl.x - 2 * pad;
+        const rh = (br.y + br.h) - tl.y - 2 * pad;
+
+        const el = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        el.setAttribute("x", rx);
+        el.setAttribute("y", ry);
+        el.setAttribute("width", rw);
+        el.setAttribute("height", rh);
+        el.setAttribute("rx", radius);
+        el.setAttribute("ry", radius);
+        el.setAttribute("style", style);
+        svg.appendChild(el);
+
+      } else if (wrapsH && !wrapsV) {
+        // Horizontal Wrap
+        const tlLeft = getBounds(r0, 0);
+        const brLeft = getBounds(r0 + h - 1, (c0 + w) % C - 1);
+        const yTop = tlLeft.y + pad;
+        const yBot = brLeft.y + brLeft.h - pad;
+        const xEdgeLeft = tlLeft.x - 6;
+        const xInnerLeft = brLeft.x + brLeft.w - pad;
+
+        const pathLeft = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        pathLeft.setAttribute("d", `
+          M ${xEdgeLeft},${yTop}
+          L ${xInnerLeft - radius},${yTop}
+          Q ${xInnerLeft},${yTop} ${xInnerLeft},${yTop + radius}
+          L ${xInnerLeft},${yBot - radius}
+          Q ${xInnerLeft},${yBot} ${xInnerLeft - radius},${yBot}
+          L ${xEdgeLeft},${yBot}
+        `);
+        pathLeft.setAttribute("style", style);
+        svg.appendChild(pathLeft);
+
+        const tlRight = getBounds(r0, c0);
+        const brRight = getBounds(r0 + h - 1, C - 1);
+        const xEdgeRight = brRight.x + brRight.w + 6;
+        const xInnerRight = tlRight.x + pad;
+
+        const pathRight = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        pathRight.setAttribute("d", `
+          M ${xEdgeRight},${yTop}
+          L ${xInnerRight + radius},${yTop}
+          Q ${xInnerRight},${yTop} ${xInnerRight},${yTop + radius}
+          L ${xInnerRight},${yBot - radius}
+          Q ${xInnerRight},${yBot} ${xInnerRight + radius},${yBot}
+          L ${xEdgeRight},${yBot}
+        `);
+        pathRight.setAttribute("style", style);
+        svg.appendChild(pathRight);
+
+      } else if (!wrapsH && wrapsV) {
+        // Vertical Wrap
+        const tlTop = getBounds(0, c0);
+        const brTop = getBounds((r0 + h) % R - 1, c0 + w - 1);
+        const xLeft = tlTop.x + pad;
+        const xRight = brTop.x + brTop.w - pad;
+        const yEdgeTop = tlTop.y - 6;
+        const yInnerTop = brTop.y + brTop.h - pad;
+
+        const pathTop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        pathTop.setAttribute("d", `
+          M ${xLeft},${yEdgeTop}
+          L ${xLeft},${yInnerTop - radius}
+          Q ${xLeft},${yInnerTop} ${xLeft + radius},${yInnerTop}
+          L ${xRight - radius},${yInnerTop}
+          Q ${xRight},${yInnerTop} ${xRight},${yInnerTop - radius}
+          L ${xRight},${yEdgeTop}
+        `);
+        pathTop.setAttribute("style", style);
+        svg.appendChild(pathTop);
+
+        const tlBot = getBounds(r0, c0);
+        const brBot = getBounds(R - 1, c0 + w - 1);
+        const yEdgeBot = brBot.y + brBot.h + 6;
+        const yInnerBot = tlBot.y + pad;
+
+        const pathBot = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        pathBot.setAttribute("d", `
+          M ${xLeft},${yEdgeBot}
+          L ${xLeft},${yInnerBot + radius}
+          Q ${xLeft},${yInnerBot} ${xLeft + radius},${yInnerBot}
+          L ${xRight - radius},${yInnerBot}
+          Q ${xRight},${yInnerBot} ${xRight},${yInnerBot + radius}
+          L ${xRight},${yEdgeBot}
+        `);
+        pathBot.setAttribute("style", style);
+        svg.appendChild(pathBot);
+
+      } else {
+        // 4 Corners Wrap
+        const corners = [
+          { r: 0, c: 0, oX: -6, oY: -6, dirX: 1, dirY: 1 },
+          { r: 0, c: C - 1, oX: 6, oY: -6, dirX: -1, dirY: 1 },
+          { r: R - 1, c: 0, oX: -6, oY: 6, dirX: 1, dirY: -1 },
+          { r: R - 1, c: C - 1, oX: 6, oY: 6, dirX: -1, dirY: -1 }
+        ];
+
+        corners.forEach(cn => {
+          const cb = getBounds(cn.r, cn.c);
+          const ex = cn.dirX === 1 ? cb.x + cb.w - pad : cb.x + pad;
+          const ey = cn.dirY === 1 ? cb.y + cb.h - pad : cb.y + pad;
+          const oX = cn.dirX === 1 ? cb.x + cn.oX : cb.x + cb.w + cn.oX;
+          const oY = cn.dirY === 1 ? cb.y + cn.oY : cb.y + cb.h + cn.oY;
+
+          const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          p.setAttribute("d", `M ${oX},${ey} L ${ex},${ey} Q ${ex},${ey} ${ex},${oY}`);
+          p.setAttribute("style", style);
+          svg.appendChild(p);
+        });
+      }
+    }
+
+    /* =========================================================
+       9. LIVE SELECTION INSPECTOR & CANCELLATION EXPLAINER
+       ========================================================= */
+    function updateInspector() {
+      const { rows: R, cols: C } = getGridDims(currentVarCount);
+      const chosenCells = Array.from(selectedCells).map(k => {
+        const [r, c] = k.split(',').map(Number);
+        return { r, c };
+      });
+
+      const count = chosenCells.length;
+      document.getElementById('selection-count').textContent = `${count} cell${count === 1 ? '' : 's'} selected`;
+
+      const previewBox = document.getElementById('preview-box');
+      const previewDesc = document.getElementById('preview-desc');
+      const previewTerm = document.getElementById('preview-term');
+      const varBreakdown = document.getElementById('var-breakdown');
+      const confirmBtn = document.getElementById('btn-confirm-group');
+
+      if (count === 0) {
+        previewBox.className = 'preview-box';
+        previewDesc.textContent = 'Click 1s on the grid to create a circle.';
+        previewTerm.textContent = '--';
+        varBreakdown.style.display = 'none';
+        confirmBtn.disabled = true;
+        return;
+      }
+
+      // Check for presence of '0'
+      const hasZero = chosenCells.some(pt => mapData[pt.r][pt.c] === 0);
+      if (hasZero) {
+        previewBox.className = 'preview-box invalid';
+        previewDesc.textContent = '❌ Circles cannot include a 0! Only circle 1s (or Xs).';
+        previewTerm.textContent = 'Cannot include 0';
+        varBreakdown.style.display = 'none';
+        confirmBtn.disabled = true;
+        return;
+      }
+
+      // Check size power of 2 & geometry
+      const rect = analyzeRectangle(chosenCells, R, C);
+      if (!rect) {
+        previewBox.className = 'preview-box invalid';
+        if (![1, 2, 4, 8, 16].includes(count)) {
+          previewDesc.textContent = `❌ Size ${count} is not allowed. Circles must have 1, 2, 4, 8, or 16 cells!`;
+        } else {
+          previewDesc.textContent = `❌ Cells must form a straight line or rectangle (edges can wrap around!).`;
+        }
+        previewTerm.textContent = 'Not a rectangle';
+        varBreakdown.style.display = 'none';
+        confirmBtn.disabled = true;
+        return;
+      }
+
+      // Valid circle! Show live variable cancellation breakdown
+      const analysisObj = getTermAnalysis(chosenCells, currentVarCount);
+      previewBox.className = 'preview-box valid';
+      previewDesc.innerHTML = `✔ Valid circle of <strong>${count}</strong> cell${count === 1 ? '' : 's'}:`;
+      previewTerm.innerHTML = formatTermDisplay(analysisObj.term);
+
+      // Build friendly cancellation explanation
+      varBreakdown.style.display = 'flex';
+      varBreakdown.innerHTML = '';
+      analysisObj.analysis.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'var-row';
+        if (item.status === 'cancels') {
+          row.innerHTML = `<span>Variable <strong>${item.varName}</strong>:</span> <span class="var-cancels">Changes (Cancels out! 🎉)</span>`;
+        } else {
+          const meaning = item.val === 1 ? `${item.varName} is 1` : `${item.varName} is 0 (${item.varName}')`;
+          row.innerHTML = `<span>Variable <strong>${item.varName}</strong>:</span> <span class="var-stays">Stays (${meaning})</span>`;
+        }
+        varBreakdown.appendChild(row);
+      });
+
+      confirmBtn.disabled = false;
+    }
+
+    function confirmCurrentGroup() {
+      const { rows: R, cols: C } = getGridDims(currentVarCount);
+      const chosenCells = Array.from(selectedCells).map(k => {
+        const [r, c] = k.split(',').map(Number);
+        return { r, c };
+      });
+
+      const rect = analyzeRectangle(chosenCells, R, C);
+      const hasZero = chosenCells.some(pt => mapData[pt.r][pt.c] === 0);
+
+      if (!rect || hasZero) {
+        sound.error();
+        return;
+      }
+
+      const term = getTermAnalysis(chosenCells, currentVarCount).term;
+      const colorIdx = confirmedGroups.length;
+
+      confirmedGroups.push({
+        cells: chosenCells,
+        term: term,
+        colorIdx: colorIdx
+      });
+
+      sound.add();
+      selectedCells.clear();
+      renderBoard();
+      renderGroupsList();
+      showAlert('Circle added to your formula!', 'success');
+    }
+
+    function clearDraftSelection() {
+      selectedCells.clear();
+      renderBoard();
+    }
+
+    function deleteGroup(idx) {
+      confirmedGroups.splice(idx, 1);
+      sound.remove();
+      renderBoard();
+      renderGroupsList();
+    }
+
+    function clearAllGroups() {
+      confirmedGroups = [];
+      selectedCells.clear();
+      sound.remove();
+      renderBoard();
+      renderGroupsList();
+    }
+
+    function renderGroupsList() {
+      const container = document.getElementById('circles-list');
+      document.getElementById('active-group-count').textContent = confirmedGroups.length;
+
+      if (confirmedGroups.length === 0) {
+        container.innerHTML = `<div style="color: var(--text-dim); font-size: 0.8rem; text-align: center; padding: 20px 0;">No circles added yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      confirmedGroups.forEach((grp, idx) => {
+        const pill = document.createElement('div');
+        const color = GROUP_COLORS[grp.colorIdx % GROUP_COLORS.length];
+        pill.className = 'circle-pill';
+        pill.style.borderLeftColor = color.border;
+
+        pill.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color.border};"></span>
+            <span>${formatTermDisplay(grp.term)}</span>
+            <span style="font-size:0.75rem; color:var(--text-dim);">(${grp.cells.length} cells)</span>
+          </div>
+          <button class="del-btn" onclick="deleteGroup(${idx})" title="Remove circle">✕</button>
+        `;
+        container.appendChild(pill);
+      });
+    }
+
+    /* =========================================================
+       10. FORMULA DISPLAY & MONITOR
+       ========================================================= */
+    function updateFormulaDisplay() {
+      const formulaEl = document.getElementById('formula-display');
+      const targetBadge = document.getElementById('target-status');
+
+      const { rows: R, cols: C } = getGridDims(currentVarCount);
+      let totalOnes = 0;
+      let coveredOnes = 0;
+
+      for (let r = 0; r < R; r++) {
+        for (let c = 0; c < C; c++) {
+          if (mapData[r][c] === 1) {
+            totalOnes++;
+            const isCovered = confirmedGroups.some(g => g.cells.some(pt => pt.r === r && pt.c === c));
+            if (isCovered) coveredOnes++;
+          }
+        }
+      }
+
+      const remaining = totalOnes - coveredOnes;
+      if (remaining === 0) {
+        targetBadge.className = 'target-badge ready';
+        targetBadge.textContent = '✔ All 1s Covered! Ready to check.';
+      } else {
+        targetBadge.className = 'target-badge pending';
+        targetBadge.textContent = `1s Left to Circle: ${remaining}`;
+      }
+
+      if (confirmedGroups.length === 0) {
+        formulaEl.innerHTML = `F = 0`;
+        return;
+      }
+
+      const termsHTML = confirmedGroups.map(g => {
+        const color = GROUP_COLORS[g.colorIdx % GROUP_COLORS.length];
+        return `<span style="color: ${color.text}">${formatTermDisplay(g.term)}</span>`;
+      }).join(' + ');
+
+      formulaEl.innerHTML = `F = ${termsHTML}`;
+    }
+
+    /* =========================================================
+       11. SOLUTION VERIFICATION & GRADING
+       ========================================================= */
+    function checkSolution() {
+      const { rows: R, cols: C } = getGridDims(currentVarCount);
+
+      // Check all 1s are covered
+      let uncoveredCount = 0;
+      for (let r = 0; r < R; r++) {
+        for (let c = 0; c < C; c++) {
+          if (mapData[r][c] === 1) {
+            const covered = confirmedGroups.some(g => g.cells.some(pt => pt.r === r && pt.c === c));
+            if (!covered) uncoveredCount++;
+          }
+        }
+      }
+
+      if (uncoveredCount > 0) {
+        sound.error();
+        showAlert(`You still have ${uncoveredCount} one${uncoveredCount === 1 ? '' : 's'} that need to be circled!`, 'warning');
+        return;
+      }
+
+      // Check for redundant circles
+      const redundant = [];
+      confirmedGroups.forEach((g, idx) => {
+        const onesInGroup = g.cells.filter(pt => mapData[pt.r][pt.c] === 1);
+        const allCoveredByOthers = onesInGroup.every(pt =>
+          confirmedGroups.some((other, oIdx) => oIdx !== idx && other.cells.some(opt => opt.r === pt.r && opt.c === pt.c))
+        );
+        if (allCoveredByOthers) redundant.push(idx + 1);
+      });
+
+      const optimalCover = solveMinimalCover(mapData, currentVarCount);
+      const userCount = confirmedGroups.length;
+      const optCount = optimalCover.length;
+
+      let stars = 1;
+      let review = "";
+
+      if (userCount === optCount && redundant.length === 0) {
+        stars = 3;
+        review = "Outstanding! You found the minimal number of circles with zero waste!";
+      } else if (userCount <= optCount + 1 && redundant.length === 0) {
+        stars = 2;
+        review = `Good job! All 1s are covered, but this map can be solved using just ${optCount} circle${optCount === 1 ? '' : 's'}.`;
+      } else {
+        stars = 1;
+        if (redundant.length > 0) {
+          review = `All 1s are covered, but Circle ${redundant.join(', ')} is completely redundant and can be removed!`;
+        } else {
+          review = `Try making larger circles of 4 or 8 cells to simplify even further!`;
+        }
+      }
+
+      if (gameMode === 'campaign') {
+        const prev = userStars[currentLevelIdx] || 0;
+        if (stars > prev) {
+          userStars[currentLevelIdx] = stars;
+          try { localStorage.setItem('kmap_quest_stars', JSON.stringify(userStars)); } catch(e) {}
+          updateTotalStarsBadge();
+        }
+      }
+
+      sound.win();
+      launchConfetti();
+      openWinModal(stars, review);
+    }
+
+    /* =========================================================
+       12. HINTS & AUTO-SOLVE
+       ========================================================= */
+    function giveHint() {
+      const optimal = solveMinimalCover(mapData, currentVarCount);
+      if (optimal.length === 0) {
+        showAlert('No 1s to circle on this map!', 'warning');
+        return;
+      }
+
+      const missing = optimal.find(opt => {
+        const optKey = opt.cells.map(p => `${p.r},${p.c}`).sort().join(';');
+        return !confirmedGroups.some(g => g.cells.map(p => `${p.r},${p.c}`).sort().join(';') === optKey);
+      });
+
+      if (!missing) {
+        showAlert('Your circles are already optimal! Click "Check My Circles".', 'success');
+        return;
+      }
+
+      selectedCells.clear();
+      missing.cells.forEach(pt => selectedCells.add(`${pt.r},${pt.c}`));
+      sound.hint();
+      renderBoard();
+      showAlert(`💡 Hint: Form this ${missing.cells.length}-cell circle for rule: ${formatTermDisplay(missing.term)}`, 'success');
+    }
+
+    function autoSolve() {
+      confirmedGroups = [];
+      selectedCells.clear();
+      const optimal = solveMinimalCover(mapData, currentVarCount);
+
+      optimal.forEach((grp, idx) => {
+        confirmedGroups.push({
+          cells: grp.cells,
+          term: grp.term,
+          colorIdx: idx
+        });
+      });
+
+      sound.add();
+      renderBoard();
+      renderGroupsList();
+      showAlert('🤖 Auto-solved with the cleanest minimal circles!', 'success');
+    }
+
+    /* =========================================================
+       13. CAMPAIGN, PRACTICE & SANDBOX
+       ========================================================= */
+    function setMode(mode) {
+      gameMode = mode;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`tab-${mode}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const sandboxPanel = document.getElementById('sandbox-panel');
+      const campaignNav = document.getElementById('campaign-nav');
+      const lvlStars = document.getElementById('level-stars');
+
+      if (mode === 'campaign') {
+        sandboxPanel.style.display = 'none';
+        campaignNav.style.display = 'flex';
+        lvlStars.style.display = 'flex';
+        loadCampaignLevel(currentLevelIdx);
+      } else if (mode === 'practice') {
+        sandboxPanel.style.display = 'none';
+        campaignNav.style.display = 'none';
+        lvlStars.style.display = 'none';
+        document.getElementById('level-label').textContent = 'Practice Mode';
+        document.getElementById('level-tip').innerHTML = 'Random puzzle generated! Circle all 1s using as few circles as possible.';
+        generatePracticeMap(Math.random() > 0.5 ? 4 : 3);
+      } else if (mode === 'sandbox') {
+        sandboxPanel.style.display = 'flex';
+        campaignNav.style.display = 'none';
+        lvlStars.style.display = 'none';
+        document.getElementById('level-label').textContent = 'Sandbox / Free Play';
+        document.getElementById('level-tip').innerHTML = 'Click any cell to toggle between <strong>0, 1, and X</strong>, then practice circling!';
+        setSandboxGrid(currentVarCount || 3);
+      }
+    }
+
+    function loadCampaignLevel(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= CAMPAIGN_LEVELS.length) idx = CAMPAIGN_LEVELS.length - 1;
+      currentLevelIdx = idx;
+
+      const lvl = CAMPAIGN_LEVELS[idx];
+      currentVarCount = lvl.varCount;
+      mapData = lvl.map.map(r => [...r]);
+      confirmedGroups = [];
+      selectedCells.clear();
+
+      document.getElementById('level-label').textContent = lvl.title;
+      document.getElementById('level-tip').innerHTML = `<strong>Tip:</strong> ${lvl.tip}`;
+
+      const starsEarned = userStars[idx] || 0;
+      document.getElementById('level-stars').innerHTML = [1,2,3].map(i =>
+        `<span class="${i <= starsEarned ? 'star-filled' : ''}">★</span>`
+      ).join('');
+
+      document.getElementById('btn-prev-lvl').disabled = (idx === 0);
+      document.getElementById('btn-next-lvl').disabled = (idx === CAMPAIGN_LEVELS.length - 1);
+
+      renderBoard();
+      renderGroupsList();
+      updateTotalStarsBadge();
+    }
+
+    function prevLevel() {
+      if (currentLevelIdx > 0) loadCampaignLevel(currentLevelIdx - 1);
+    }
+    function nextLevel() {
+      if (currentLevelIdx < CAMPAIGN_LEVELS.length - 1) loadCampaignLevel(currentLevelIdx + 1);
+    }
+
+    function updateTotalStarsBadge() {
+      let count = 0;
+      for (let i = 0; i < CAMPAIGN_LEVELS.length; i++) {
+        count += (userStars[i] || 0);
+      }
+      document.getElementById('total-stars-badge').textContent = `${count}/${CAMPAIGN_LEVELS.length * 3} ★`;
+    }
+
+    function generatePracticeMap(varCount) {
+      currentVarCount = varCount;
+      const { rows: R, cols: C } = getGridDims(varCount);
+
+      let ones = 0;
+      do {
+        mapData = [];
+        ones = 0;
+        for (let r = 0; r < R; r++) {
+          const row = [];
+          for (let c = 0; c < C; c++) {
+            const rand = Math.random();
+            let val = 0;
+            if (rand < 0.45) { val = 1; ones++; }
+            else if (rand < 0.55 && varCount === 4) { val = 'X'; }
+            row.push(val);
+          }
+          mapData.push(row);
+        }
+      } while (ones < 2 || ones > (R * C - 2));
+
+      confirmedGroups = [];
+      selectedCells.clear();
+      renderBoard();
+      renderGroupsList();
+      showAlert('New practice puzzle generated!', 'success');
+    }
+
+    function setSandboxGrid(vCount) {
+      currentVarCount = vCount;
+      const { rows: R, cols: C } = getGridDims(vCount);
+      mapData = Array(R).fill(0).map(() => Array(C).fill(0));
+      mapData[0][0] = 1;
+      mapData[0][C - 1] = 1;
+      confirmedGroups = [];
+      selectedCells.clear();
+      renderBoard();
+      renderGroupsList();
+    }
+
+    function clearSandboxGrid() {
+      const { rows: R, cols: C } = getGridDims(currentVarCount);
+      mapData = Array(R).fill(0).map(() => Array(C).fill(0));
+      confirmedGroups = [];
+      selectedCells.clear();
+      renderBoard();
+      renderGroupsList();
+    }
+
+    /* =========================================================
+       14. MODALS & ALERTS
+       ========================================================= */
+    function showAlert(msg, type = 'success') {
+      const box = document.getElementById('status-alert');
+      box.className = `status-alert status-${type} show`;
+      box.textContent = msg;
+    }
+
+    function openWinModal(stars, desc) {
+      const modal = document.getElementById('win-modal');
+      const starStr = [1,2,3].map(i => i <= stars ? '★' : '☆').join('');
+      document.getElementById('modal-star-display').textContent = starStr;
+      document.getElementById('modal-star-display').style.color = stars === 3 ? '#fbbf24' : '#94a3b8';
+      document.getElementById('modal-desc').textContent = desc;
+
+      const terms = confirmedGroups.map(g => formatTermDisplay(g.term));
+      document.getElementById('modal-final-expr').innerHTML = `Final Formula: F = ${terms.join(' + ') || '0'}`;
+
+      const nextBtn = document.getElementById('modal-next-btn');
+      if (gameMode === 'campaign' && currentLevelIdx < CAMPAIGN_LEVELS.length - 1) {
+        nextBtn.style.display = 'inline-block';
+      } else {
+        nextBtn.style.display = 'none';
+      }
+
+      modal.classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function nextLevelFromModal() {
+      closeModal('win-modal');
+      nextLevel();
+    }
+
+    function openLevelsModal() {
+      const modal = document.getElementById('levels-modal');
+      const grid = document.getElementById('levels-grid');
+      grid.innerHTML = '';
+
+      CAMPAIGN_LEVELS.forEach((lvl, idx) => {
+        const card = document.createElement('div');
+        const stars = userStars[idx] || 0;
+        card.className = `level-card ${idx === currentLevelIdx ? 'active' : ''}`;
+        card.onclick = () => {
+          closeModal('levels-modal');
+          setMode('campaign');
+          loadCampaignLevel(idx);
+        };
+
+        card.innerHTML = `
+          <strong style="font-size:0.85rem;">Level ${lvl.id}</strong>
+          <span style="font-size:0.75rem; color:var(--text-muted);">${lvl.varCount}-Var</span>
+          <span style="color:#fbbf24; font-size:0.8rem;">${[1,2,3].map(i => i <= stars ? '★' : '☆').join('')}</span>
+        `;
+        grid.appendChild(card);
+      });
+
+      modal.classList.add('open');
+    }
+
+    function openHelpModal() {
+      document.getElementById('help-modal').classList.add('open');
+    }
+
+    /* =========================================================
+       15. KEYBOARD CONTROLS
+       ========================================================= */
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const btn = document.getElementById('btn-confirm-group');
+        if (!btn.disabled) confirmCurrentGroup();
+      } else if (e.key === 'Escape') {
+        clearDraftSelection();
+        closeModal('win-modal');
+        closeModal('levels-modal');
+        closeModal('help-modal');
+      } else if (e.key === 'h' || e.key === 'H') {
+        giveHint();
+      }
+    });
+
+    /* =========================================================
+       16. CONFETTI ANIMATION
+       ========================================================= */
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnim = null;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      renderSvgLoops();
+    });
+    resizeCanvas();
+
+    function launchConfetti() {
+      confettiParticles = [];
+      const colors = ['#38bdf8', '#c084fc', '#34d399', '#fbbf24', '#f43f5e'];
+      for (let i = 0; i < 90; i++) {
+        confettiParticles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 16,
+          vy: (Math.random() - 0.8) * 18,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 10,
+          opacity: 1
+        });
+      }
+
+      if (confettiAnim) cancelAnimationFrame(confettiAnim);
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+
+      for (let p of confettiParticles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.4;
+        p.vx *= 0.98;
+        p.rotation += p.rotSpeed;
+        p.opacity -= 0.012;
+
+        if (p.opacity > 0) {
+          alive = true;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(p.opacity, 0);
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        }
+      }
+
+      if (alive) confettiAnim = requestAnimationFrame(animateConfetti);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    /* =========================================================
+       17. INITIALIZE GAME
+       ========================================================= */
+    loadCampaignLevel(0);
+  </script>
+</body>
+</html>
